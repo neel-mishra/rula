@@ -41,10 +41,19 @@ Query parameters passed to Streamlit are documented in [docs/deep-link-contract.
 
 ## Deploy on Vercel
 
-1. Import this GitHub repository in Vercel.
-2. Set **Root Directory** to `rula-landing-page`.
-3. Add `NEXT_PUBLIC_STREAMLIT_BASE_URL` pointing at your hosted Streamlit URL.
-4. Deploy.
+1. **Import** the GitHub repo (same monorepo as `rula-gtm-agent`).
+2. **Root Directory:** `rula-landing-page` (required — do not use repo root).
+3. **Environment variables** (Production and Preview):
+   - `NEXT_PUBLIC_STREAMLIT_BASE_URL` = your Streamlit app **origin only**, e.g. `https://rula-gtm-agent.streamlit.app`  
+   - **No trailing slash.** Use **https** so it matches your HTTPS landing.
+4. **Deploy**, then open the Vercel URL → pick role → **Launch** → confirm the new tab opens Streamlit with `?role=…&page=…` in the address bar and the correct sidebar page.
+
+### Linkage (already in code)
+
+- The landing builds `https://<streamlit-host>/?role=<admin|user|viewer>&page=<prospecting|map>`.
+- `rula-gtm-agent/app.py` applies those query params (`_apply_landing_query_params`) so **Navigate** and (in non-production) **Your role** match the landing choice.
+
+If `NEXT_PUBLIC_STREAMLIT_BASE_URL` is missing on Vercel, launch links resolve to `#` until you set the variable and **redeploy** (Next bakes `NEXT_PUBLIC_*` at build time).
 
 ## Security note
 

@@ -12,7 +12,15 @@ export function buildStreamlitAppUrl(
   role: RoleId,
   page: ToolPage
 ): string {
-  const raw = (baseUrl || "").trim() || "http://localhost:8501";
+  const trimmed = (baseUrl || "").trim();
+  const devFallback =
+    typeof process !== "undefined" && process.env.NODE_ENV === "development"
+      ? "http://localhost:8501"
+      : "";
+  const raw = trimmed || devFallback;
+  if (!raw) {
+    return "#";
+  }
   const base = raw.replace(/\/+$/, "");
   const u = new URL(base);
   u.searchParams.set("role", role);
