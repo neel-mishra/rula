@@ -1,0 +1,7 @@
+# Streamlit Community Cloud installs this file first (same dir as app.py).
+# Keep in sync with [project.dependencies] in pyproject.toml.
+pydantic>=2.7.0
+streamlit>=1.37.0
+anthropic>=0.39.0
+google-genai>=1.0.0
+pyyaml>=6.0.0

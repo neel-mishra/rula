@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "rula-gtm-agent"
 version = "0.1.0"
@@ -17,6 +21,12 @@ dev = [
   "pytest>=8.0.0",
   "ruff>=0.8.0",
 ]
+
+# Installable layout for Streamlit Community Cloud / Poetry / pip (``src`` tree + subpackages).
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+namespaces = true
 
 [tool.ruff]
 line-length = 120
