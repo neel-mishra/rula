@@ -40,8 +40,8 @@ streamlit run app.py
 ### Streamlit Community Cloud
 
 - **Main file:** `rula-gtm-agent/app.py` (from the monorepo root).
-- **Dependencies:** Cloud prefers **`requirements.txt` in the same directory as `app.py`** (see `rula-gtm-agent/requirements.txt`) so installs use pip rather than Poetry’s project-root install.
-- **Layout:** `pyproject.toml` includes a `[build-system]` + setuptools package discovery so `pip install .` works when a platform installs the project as a package.
+- **Dependencies:** Keep **`requirements.txt` next to `app.py`** (`rula-gtm-agent/requirements.txt`). Cloud may still use **Poetry** when `pyproject.toml` is present; `[tool.poetry] package-mode = false` prevents Poetry from failing on “install the root project.”
+- **Layout:** `pyproject.toml` includes `[build-system]` + setuptools discovery so local **`pip install -e .`** keeps working.
 
 ## Configuration
 

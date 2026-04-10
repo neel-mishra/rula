@@ -2,6 +2,12 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# Streamlit Community Cloud invokes Poetry for pyproject.toml; without this it tries to
+# install the root project as a package named rula-gtm-agent and fails. Dependencies
+# still install; the app runs with cwd on PYTHONPATH (imports from ``src`` work).
+[tool.poetry]
+package-mode = false
+
 [project]
 name = "rula-gtm-agent"
 version = "0.1.0"
