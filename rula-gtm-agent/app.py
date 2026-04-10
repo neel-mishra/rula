@@ -41,7 +41,8 @@ from src.ui.components import (
 from src.ui.promote_map import build_evidence_from_prospecting
 from src.ui.pages import page_insights
 
-DATA_DIR = Path("data")
+# Anchor to this file so MAP fixtures resolve on Streamlit Cloud (cwd is often repo root).
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def _store_map_promotion(account: dict, result: dict) -> None:
@@ -106,7 +107,10 @@ def _load_accounts() -> list[dict]:
 
 
 def _load_evidence() -> list[dict]:
-    return json.loads((DATA_DIR / "map_evidence.json").read_text(encoding="utf-8"))
+    path = DATA_DIR / "map_evidence.json"
+    if not path.is_file():
+        return []
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
