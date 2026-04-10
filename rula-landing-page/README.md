@@ -31,7 +31,9 @@ Open [http://localhost:3000](http://localhost:3000) for the landing page.
 |----------|-------------|
 | `NEXT_PUBLIC_STREAMLIT_BASE_URL` | Full origin of the Streamlit app, e.g. `https://your-app.streamlit.app` or `http://localhost:8501` |
 
-Set this in **Vercel → Project → Settings → Environment Variables** for Production and Preview.
+**Local dev:** if unset, the app defaults to `http://localhost:8501` so tool links work without `.env.local`.
+
+Set this in **Vercel → Project → Settings → Environment Variables** for Production and Preview (required there).
 
 ## Deep links
 
