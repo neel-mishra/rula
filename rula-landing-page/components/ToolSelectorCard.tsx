@@ -1,6 +1,7 @@
 "use client";
 
-type Accent = "blue" | "emerald";
+/** Primary stripe = brand purple; accent = softer lilac (MAP card), on-brand vs generic emerald. */
+type Accent = "brand" | "accent";
 
 type Props = {
   title: string;
@@ -38,25 +39,25 @@ export function ToolSelectorCard({
   description,
   cta,
   href,
-  accent = "blue",
+  accent = "brand",
   disabled,
   disabledReason,
 }: Props) {
   const accentBar =
-    accent === "emerald"
-      ? "bg-emerald-500 group-hover:bg-emerald-400"
-      : "bg-[var(--rula-blue)] group-hover:bg-blue-600";
+    accent === "accent"
+      ? "bg-[var(--rula-accent)] group-hover:bg-[var(--rula-accent-hover)]"
+      : "bg-[var(--rula-brand)] group-hover:bg-[var(--rula-brand-hover)]";
 
   if (disabled) {
     return (
       <div
-        className="flex flex-col overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 opacity-90 dark:border-slate-600 dark:bg-slate-800/30"
+        className="flex flex-col overflow-hidden rounded-2xl border-2 border-dashed border-[var(--rula-border)] bg-[var(--rula-surface-muted)] opacity-90"
         aria-disabled="true"
       >
         <div className={`h-1 w-full shrink-0 ${accentBar} opacity-50`} />
         <div className="flex flex-col p-8">
-          <h3 className="text-xl font-semibold text-[var(--rula-navy)] dark:text-slate-100">{title}</h3>
-          <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{description}</p>
+          <h3 className="text-xl font-semibold text-[var(--rula-navy)]">{title}</h3>
+          <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--rula-text-secondary)]">{description}</p>
           <p className="mt-6 text-sm text-amber-800 dark:text-amber-200">{disabledReason}</p>
         </div>
       </div>
@@ -68,16 +69,16 @@ export function ToolSelectorCard({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex flex-col overflow-hidden rounded-2xl border-2 border-slate-200 bg-white shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--rula-blue)] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rula-blue)] focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500 dark:focus-visible:ring-offset-slate-900"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border-2 border-[var(--rula-border)] bg-[var(--rula-surface)] shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--rula-brand)] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rula-brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--rula-canvas)]"
     >
       <div className={`h-1.5 w-full shrink-0 ${accentBar} transition-colors`} />
       <div className="flex flex-1 flex-col p-8">
-        <h3 className="text-xl font-semibold tracking-tight text-[var(--rula-navy)] dark:text-slate-100">{title}</h3>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{description}</p>
-        <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+        <h3 className="text-xl font-semibold tracking-tight text-[var(--rula-navy)]">{title}</h3>
+        <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--rula-text-secondary)]">{description}</p>
+        <p className="mt-4 text-xs text-[var(--rula-text-tertiary)]">
           Opens the Streamlit workspace in a new tab. Use the ⋮ menu there for theme, rerun, and cache.
         </p>
-        <span className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--rula-blue)] px-5 py-3 text-center text-sm font-semibold text-white transition group-hover:bg-[#1d4ed8] dark:group-hover:bg-blue-600">
+        <span className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--rula-brand)] px-5 py-3 text-center text-sm font-semibold text-[var(--rula-brand-foreground)] transition group-hover:bg-[var(--rula-brand-hover)]">
           {cta}
           <ExternalIcon className="opacity-90" />
         </span>

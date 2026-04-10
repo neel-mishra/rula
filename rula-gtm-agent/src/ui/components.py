@@ -1,44 +1,63 @@
 from __future__ import annotations
 
 import html
+
 import streamlit as st
 
-TIER_COLORS = {"HIGH": "#10B981", "MEDIUM": "#F59E0B", "LOW": "#EF4444"}
-AUDIT_COLORS = {"PASS": "#10B981", "REVIEW": "#F59E0B", "FAIL": "#EF4444"}
+from src.ui.theme import (
+    AUDIT_COLORS,
+    NEUTRAL_MUTED,
+    PILL_OUTLINE,
+    RISK_CHIP_BACKGROUND,
+    RISK_CHIP_TEXT,
+    SOLID_BADGE_TEXT,
+    TIER_COLORS,
+)
+
+
+def _pill_style(bg: str) -> str:
+    return (
+        f"background:{bg};color:{SOLID_BADGE_TEXT};padding:4px 12px;"
+        f"border-radius:12px;font-weight:600;font-size:14px;"
+        f"box-shadow:0 0 0 1px {PILL_OUTLINE};"
+    )
+
+
+def _badge_style(bg: str) -> str:
+    return (
+        f"background:{bg};color:{SOLID_BADGE_TEXT};padding:3px 10px;"
+        f"border-radius:10px;font-size:13px;font-weight:600;"
+        f"box-shadow:0 0 0 1px {PILL_OUTLINE};"
+    )
 
 
 def confidence_pill(tier: str, score: int | float | None = None) -> str:
-    color = TIER_COLORS.get(tier, "#6B7280")
+    color = TIER_COLORS.get(tier, NEUTRAL_MUTED)
     tier_e = html.escape(str(tier), quote=True)
     if score is None:
         label = tier_e
     else:
         label = f"{tier_e} ({html.escape(str(score), quote=True)})"
-    return (
-        f'<span style="background:{color};color:#fff;padding:4px 12px;'
-        f'border-radius:12px;font-weight:600;font-size:14px;">{label}</span>'
-    )
+    return f'<span style="{_pill_style(color)}">{label}</span>'
 
 
 def audit_badge(passed: bool | None) -> str:
     if passed is None:
-        label, color = "Pending", "#6B7280"
+        label, color = "Pending", NEUTRAL_MUTED
     elif passed:
         label, color = "Ready to Send", AUDIT_COLORS["PASS"]
     else:
         label, color = "Needs Review", AUDIT_COLORS["REVIEW"]
-    return (
-        f'<span style="background:{color};color:#fff;padding:3px 10px;'
-        f'border-radius:10px;font-size:13px;font-weight:600;">{label}</span>'
-    )
+    return f'<span style="{_badge_style(color)}">{label}</span>'
 
 
 def risk_chips(risks: list[str]) -> str:
     if not risks:
         return ""
     chips = " &nbsp; ".join(
-        f'<span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;'
-        f'border-radius:8px;font-size:12px;">{html.escape(str(r), quote=True)}</span>'
+        f'<span style="background:{RISK_CHIP_BACKGROUND};color:{RISK_CHIP_TEXT};padding:2px 8px;'
+        f'border-radius:8px;font-size:12px;box-shadow:0 0 0 1px {PILL_OUTLINE};">'
+        f"{html.escape(str(r), quote=True)}</span>"
         for r in risks
     )
     return chips

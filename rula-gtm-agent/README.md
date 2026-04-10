@@ -67,6 +67,27 @@ The Streamlit sidebar **role selector** (Admin / User / Viewer) is a **demo-only
 - In **`ENVIRONMENT=production`**, the app resolves the effective role to **`viewer`** and disables self-service role switching (see `src/security/rbac.py`). This still does **not** replace a real identity provider.
 - For any shared or internet-facing deployment, integrate **real authn** (OIDC/SAML/API tokens) and map identity claims to RBAC roles server-side; do not trust client-selected roles.
 
+### Landing page deep links (Vercel → Streamlit)
+
+The Next.js app in `rula-landing-page` launches Streamlit with query parameters. `app.py` applies them via `_apply_landing_query_params` before the sidebar renders:
+
+| Query param | Values | Effect |
+|-------------|--------|--------|
+| `page` | `prospecting`, `map` | Sets **Navigate** to **Prospecting** or **MAP Review** (any environment). |
+| `role` | `admin`, `user`, `viewer` | Sets session role in **non-production** only. In **`ENVIRONMENT=production`**, the effective role stays **`viewer`** (`resolve_role`); the role selector remains disabled. |
+
+Re-apply: when the `(page, role)` pair in the URL **changes** (e.g. user launches another tool from the landing page in the same browser session), the bridge updates `_ui_nav_page` / `role` again and clears sidebar widget keys so **Navigate** / **Your role** match the new link.
+
+**Direct open** (no `?page=` / `?role=`): unchanged; defaults match prior behavior. Invalid values are ignored; the bridge never raises.
+
+### Lean UX validation (post-change)
+
+Quick checks before release:
+
+1. **Fresh session:** From the landing page, pick a role + tool → **Launch** → confirm **Navigate** and **Your role** (non-prod) match without manual sidebar fixes.
+2. **Same session, second launch:** Open the other tool from the landing page → **Navigate** updates to the new tool (non-prod role behavior unchanged unless URL includes `role`).
+3. **Production:** **Navigate** matches the tool; role is viewer and disabled; copy explains production lock.
+
 **Future HTTP ingest (orchestrators):** see [docs/ingest_contract.md](docs/ingest_contract.md). **Phase gates / baseline:** see [docs/implementation_runbook.md](docs/implementation_runbook.md).
 
 ## UI Guide (v2)

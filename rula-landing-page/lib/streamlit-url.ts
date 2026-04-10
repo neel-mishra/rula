@@ -2,6 +2,11 @@ import type { RoleId } from "./copy";
 
 export type ToolPage = "prospecting" | "map";
 
+/**
+ * Builds the Streamlit app URL with query params consumed by `rula-gtm-agent/app.py`
+ * (`_apply_landing_query_params`): `role` = `admin` | `user` | `viewer`, `page` =
+ * `prospecting` | `map` (maps to Prospecting / MAP Review in the Navigate sidebar).
+ */
 export function buildStreamlitAppUrl(
   baseUrl: string | undefined,
   role: RoleId,

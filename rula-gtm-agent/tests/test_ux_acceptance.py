@@ -13,6 +13,7 @@ import pytest
 
 from src.orchestrator.graph import run_map_verification, run_prospecting
 from src.ui.components import audit_badge, confidence_pill, risk_chips
+from src.ui.theme import AUDIT_COLORS, TIER_COLORS
 
 
 # ---------------------------------------------------------------------------
@@ -109,27 +110,27 @@ class TestComponentRendering:
         html = confidence_pill("HIGH", 85)
         assert "HIGH" in html
         assert "85" in html
-        assert "#10B981" in html
+        assert TIER_COLORS["HIGH"] in html
 
     def test_confidence_pill_medium(self) -> None:
         html = confidence_pill("MEDIUM", 55)
         assert "MEDIUM" in html
-        assert "#F59E0B" in html
+        assert TIER_COLORS["MEDIUM"] in html
 
     def test_confidence_pill_low(self) -> None:
         html = confidence_pill("LOW", 20)
         assert "LOW" in html
-        assert "#EF4444" in html
+        assert TIER_COLORS["LOW"] in html
 
     def test_audit_badge_pass(self) -> None:
         html = audit_badge(True)
         assert "Ready to Send" in html
-        assert "#10B981" in html
+        assert AUDIT_COLORS["PASS"] in html
 
     def test_audit_badge_review(self) -> None:
         html = audit_badge(False)
         assert "Needs Review" in html
-        assert "#F59E0B" in html
+        assert AUDIT_COLORS["REVIEW"] in html
 
     def test_audit_badge_none(self) -> None:
         html = audit_badge(None)

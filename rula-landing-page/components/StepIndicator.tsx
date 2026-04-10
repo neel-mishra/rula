@@ -20,10 +20,10 @@ export function StepIndicator({ steps, activeIndex }: Props) {
                 className={[
                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
                   done
-                    ? "bg-[var(--rula-green)] text-white"
+                    ? "bg-[var(--rula-lavender)] text-[var(--rula-brand)] ring-1 ring-[var(--rula-border)]"
                     : current
-                      ? "bg-[var(--rula-blue)] text-white ring-2 ring-[var(--rula-blue)] ring-offset-2 ring-offset-[var(--rula-canvas)] dark:ring-offset-slate-900"
-                      : "border-2 border-slate-300 bg-white text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400",
+                      ? "bg-[var(--rula-brand)] text-[var(--rula-brand-foreground)] ring-2 ring-[var(--rula-brand)] ring-offset-2 ring-offset-[var(--rula-canvas)]"
+                      : "border-2 border-[var(--rula-border-strong)] bg-[var(--rula-surface)] text-[var(--rula-text-tertiary)]",
                 ].join(" ")}
                 aria-current={current ? "step" : undefined}
               >
@@ -32,14 +32,14 @@ export function StepIndicator({ steps, activeIndex }: Props) {
               <span
                 className={[
                   "text-sm font-medium",
-                  current ? "text-[var(--rula-navy)] dark:text-slate-100" : "text-slate-500 dark:text-slate-400",
+                  current ? "text-[var(--rula-navy)]" : "text-[var(--rula-text-tertiary)]",
                 ].join(" ")}
               >
                 {s.label}
               </span>
             </span>
             {i < steps.length - 1 && (
-              <span className="hidden h-px w-6 bg-slate-300 sm:block dark:bg-slate-600" aria-hidden />
+              <span className="hidden h-px w-6 bg-[var(--rula-border-strong)] sm:block" aria-hidden />
             )}
           </li>
         );

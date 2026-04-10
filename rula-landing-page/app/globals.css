@@ -2,20 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Rula brand palette (internal GTM landing)
+ * Primary mid-purple ~#6B4C9A (aligned with rula_logo_mid_purple / rebrand),
+ * warm off-whites, soft lavenders, dark navy-purple body text.
+ * @see https://www.rula.com/
+ */
 :root {
-  --rula-navy: #0f172a;
-  --rula-blue: #2563eb;
-  --rula-green: #10b981;
-  --rula-canvas: #f1f5f9;
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Brand */
+  --rula-brand: #6b4c9a;
+  --rula-brand-hover: #554378;
+  --rula-brand-foreground: #ffffff;
+  --rula-brand-soft: rgba(107, 76, 154, 0.14);
+  --rula-brand-glow: rgba(107, 76, 154, 0.22);
+
+  /* Secondary lilac (accents, alternate tool stripe, completed steps) */
+  --rula-accent: #9575c4;
+  --rula-accent-hover: #8364b0;
+
+  /* Surfaces */
+  --rula-canvas: #faf9fc;
+  --rula-surface: #ffffff;
+  --rula-surface-muted: #f5f2fa;
+  --rula-lavender: #ede8f5;
+  --rula-border: #e5dff0;
+  --rula-border-strong: #d4cce8;
+
+  /* Text */
+  --rula-navy: #1e1b2e;
+  --rula-text-secondary: #5c5668;
+  --rula-text-tertiary: #7a7389;
+
+  /* Page */
+  --background: var(--rula-canvas);
+  --foreground: var(--rula-navy);
+
+  /* Legacy aliases (components still reference these) */
+  --rula-blue: var(--rula-brand);
+  --rula-green: var(--rula-accent);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-    --rula-canvas: #0f172a;
+    --rula-canvas: #14121c;
+    --rula-surface: #1c1826;
+    --rula-surface-muted: #221e2e;
+    --rula-lavender: #2a2438;
+    --rula-border: #3d3552;
+    --rula-border-strong: #4a4060;
+    --background: var(--rula-canvas);
+    --foreground: #f4f0fa;
+    --rula-navy: #f4f0fa;
+    --rula-text-secondary: #c9c2d9;
+    --rula-text-tertiary: #a69fb8;
+    --rula-brand-soft: rgba(149, 117, 196, 0.2);
+    --rula-brand-glow: rgba(149, 117, 196, 0.28);
   }
 }
 

@@ -11,6 +11,7 @@ import streamlit as st
 from src.agents.prospecting.corrections import apply_ae_edit, list_corrections
 from src.agents.verification.capture import map_capture_to_evidence_text
 from src.config import load_config, validate_startup
+from src.landing_bridge import fingerprint, qp_scalar_get
 from src.security.rbac import resolve_role
 from src.explainability.economics import estimate_economics
 from src.explainability.threshold import explain_threshold, explain_tier_assignment
@@ -1525,28 +1526,83 @@ def _page_admin() -> None:
 # ---------------------------------------------------------------------------
 
 def _apply_landing_query_params(cfg) -> None:
-    """Apply URL query params once per session for Vercel landing deep links.
+    """Apply URL query params from the Vercel landing page (deep links).
 
-    - ``page=prospecting`` | ``page=map`` sets initial Navigate target.
-    - ``role=admin|user|viewer`` sets initial role in non-production only
-      (production remains viewer-locked via :func:`resolve_role`).
+    - ``page=prospecting`` | ``page=map`` sets **Navigate** (Prospecting / MAP Review).
+    - ``role=admin|user|viewer`` sets session role in **non-production** only; production
+      stays viewer-locked via :func:`resolve_role`.
+
+    Re-applies when the ``(page, role)`` query pair changes so a new launch from the
+    landing page updates the sidebar instead of sticking to a one-shot bridge flag.
+    Failures never raise: the app keeps running with existing session defaults.
     """
-    if st.session_state.get("_rula_qs_bridge_done"):
-        return
-    st.session_state["_rula_qs_bridge_done"] = True
     try:
         qp = st.query_params
     except Exception:
         return
-    page_raw = (qp.get("page") or "").strip().lower()
-    nav_map = {"prospecting": "Prospecting", "map": "MAP Review"}
-    if page_raw in nav_map:
-        st.session_state["_ui_nav_page"] = nav_map[page_raw]
-    if cfg.environment == "production":
+
+    try:
+        page_raw = qp_scalar_get(qp, "page")
+        role_raw = qp_scalar_get(qp, "role")
+    except Exception:
         return
-    role_raw = (qp.get("role") or "").strip().lower()
-    if role_raw in ("admin", "user", "viewer"):
-        st.session_state["role"] = role_raw
+
+    if not page_raw and not role_raw:
+        return
+
+    fp = fingerprint(page_raw, role_raw)
+    if fp == st.session_state.get("_rula_qs_fingerprint"):
+        return
+
+    nav_map = {"prospecting": "Prospecting", "map": "MAP Review"}
+    is_production = cfg.environment == "production"
+    will_apply_nav = page_raw in nav_map
+    will_apply_role = (not is_production) and role_raw in ("admin", "user", "viewer")
+
+    try:
+        if will_apply_nav or will_apply_role:
+            for key in ("sidebar_navigate", "sidebar_role_display"):
+                st.session_state.pop(key, None)
+
+            lines: list[str] = []
+            if will_apply_nav:
+                st.session_state["_ui_nav_page"] = nav_map[page_raw]
+                lines.append(f"Page **{nav_map[page_raw]}**")
+            if will_apply_role:
+                st.session_state["role"] = role_raw
+                rl = {"admin": "Admin", "user": "User", "viewer": "Viewer"}[role_raw]
+                lines.append(f"Role **{rl}**")
+            if lines:
+                st.session_state["_rula_qs_pending_caption"] = "Opened from landing · " + " · ".join(lines)
+
+        st.session_state["_rula_qs_fingerprint"] = fp
+    except Exception:
+        return
+
+
+def _inject_rula_brand_css() -> None:
+    """Dark-mode chrome; Streamlit [theme] base=dark supplies --st-* tokens."""
+    st.markdown(
+        """
+        <style>
+        /* Sidebar headings — navy-purple dark theme */
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {
+            color: var(--st-text-color);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        /* Primary interactive emphasis stays on-brand */
+        a { color: var(--st-primary-color); }
+        /* Main content headings: high contrast on dark bg */
+        .main h1, .main h2, .main h3 {
+            color: var(--st-text-color);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def main() -> None:
@@ -1555,6 +1611,7 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
+    _inject_rula_brand_css()
 
     st.sidebar.markdown("## Rula Revenue Intelligence")
 
@@ -1580,7 +1637,9 @@ def main() -> None:
     )
     st.session_state["role"] = resolve_role(label_to_role[selected_label], environment=cfg.environment)
     if is_production:
-        st.sidebar.caption("Role locked in production.")
+        st.sidebar.caption(
+            "Role is fixed in production; the tool link from the landing page still applies."
+        )
     st.sidebar.caption(f"Logged in as **{st.session_state['role']}**")
 
     pages = ["Prospecting", "MAP Review", "Insights"]
@@ -1596,6 +1655,10 @@ def main() -> None:
         key="sidebar_navigate",
     )
     st.session_state["_ui_nav_page"] = page
+
+    _qs_cap = st.session_state.pop("_rula_qs_pending_caption", None)
+    if _qs_cap:
+        st.sidebar.caption(_qs_cap)
 
     st.sidebar.markdown("---")
 

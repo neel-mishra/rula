@@ -70,18 +70,18 @@ export function LandingShell() {
   const missingBase = !base;
 
   return (
-    <div className="min-h-screen bg-[var(--rula-canvas)] dark:bg-slate-950">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(37,99,235,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(37,99,235,0.18),transparent)]" />
+    <div className="min-h-screen bg-[var(--rula-canvas)]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-18%,var(--rula-brand-soft),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-18%,var(--rula-brand-glow),transparent)]" />
 
-      <header className="relative border-b border-slate-200/80 bg-white/90 backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/90">
+      <header className="relative border-b border-[var(--rula-border)] bg-[color-mix(in_srgb,var(--rula-surface)_92%,transparent)] backdrop-blur dark:bg-[color-mix(in_srgb,var(--rula-surface)_88%,transparent)]">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-10 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--rula-blue)]">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--rula-brand)]">
             {site.eyebrow}
           </p>
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--rula-navy)] dark:text-white sm:text-4xl sm:leading-tight">
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--rula-navy)] sm:text-4xl sm:leading-tight">
             {site.title}
           </h1>
-          <p className="max-w-3xl text-lg text-slate-600 dark:text-slate-300">{site.tagline}</p>
+          <p className="max-w-3xl text-lg text-[var(--rula-text-secondary)]">{site.tagline}</p>
           <div className="pt-2">
             <StepIndicator steps={[...site.journeySteps]} activeIndex={journeyStep} />
           </div>
@@ -89,7 +89,7 @@ export function LandingShell() {
       </header>
 
       <main className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="max-w-3xl text-base leading-relaxed text-slate-700 dark:text-slate-300">
+        <p className="max-w-3xl text-base leading-relaxed text-[var(--rula-text-secondary)]">
           {site.heroLead}
         </p>
 
@@ -98,11 +98,11 @@ export function LandingShell() {
             <div>
               <h2
                 id="role-heading"
-                className="text-2xl font-semibold tracking-tight text-[var(--rula-navy)] dark:text-white"
+                className="text-2xl font-semibold tracking-tight text-[var(--rula-navy)]"
               >
                 Your role
               </h2>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+              <p className="mt-2 max-w-2xl text-sm text-[var(--rula-text-tertiary)]">
                 In local and dev, this mirrors the Streamlit sidebar. In production the app locks effective access—see
                 the agent README.
               </p>
@@ -130,20 +130,20 @@ export function LandingShell() {
             <div>
               <h2
                 id="tools-heading"
-                className="text-2xl font-semibold tracking-tight text-[var(--rula-navy)] dark:text-white"
+                className="text-2xl font-semibold tracking-tight text-[var(--rula-navy)]"
               >
                 Choose a tool
               </h2>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              <p className="mt-2 text-sm text-[var(--rula-text-tertiary)]">
                 Deep-links include your role and starting page. You can switch pages inside Streamlit anytime.
               </p>
             </div>
             {hydrated && (
               <p
-                className="mt-2 inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-[var(--rula-navy)] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 sm:mt-0"
+                className="mt-2 inline-flex items-center rounded-full border border-[var(--rula-border)] bg-[var(--rula-surface)] px-4 py-2 text-sm font-medium text-[var(--rula-navy)] shadow-sm sm:mt-0"
                 aria-live="polite"
               >
-                Launching as <span className="ml-1 font-semibold text-[var(--rula-blue)]">{roleLabel(role)}</span>
+                Launching as <span className="ml-1 font-semibold text-[var(--rula-brand)]">{roleLabel(role)}</span>
               </p>
             )}
           </div>
@@ -157,13 +157,7 @@ export function LandingShell() {
                   description={t.description}
                   cta={t.cta}
                   href={href}
-                  accent={t.id === "map" ? "emerald" : "blue"}
-                  disabled={missingBase}
-                  disabledReason={
-                    missingBase
-                      ? "Set NEXT_PUBLIC_STREAMLIT_BASE_URL (e.g. in .env.local) to your Streamlit app URL, then restart the dev server."
-                      : undefined
-                  }
+                  accent={t.id === "map" ? "accent" : "brand"}
                 />
               );
             })}
@@ -175,17 +169,26 @@ export function LandingShell() {
             className="mt-8 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100"
             role="status"
           >
-            <strong className="font-semibold">Local setup:</strong> add{" "}
+            <strong className="font-semibold">Streamlit URL:</strong> launch buttons open{" "}
             <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs dark:bg-amber-900/80 dark:text-amber-50">
-              .env.local
+              http://localhost:8501
             </code>{" "}
-            with{" "}
-            <code className="font-mono text-xs">NEXT_PUBLIC_STREAMLIT_BASE_URL=http://localhost:8501</code> and run{" "}
-            <code className="font-mono text-xs">streamlit run app.py</code> from <code className="font-mono text-xs">rula-gtm-agent</code>.
+            until you set{" "}
+            <code className="font-mono text-xs">NEXT_PUBLIC_STREAMLIT_BASE_URL</code>
+            {process.env.NODE_ENV === "development" ? (
+              <>
+                {" "}
+                in <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs dark:bg-amber-900/80 dark:text-amber-50">.env.local</code> (then restart the dev server) and run{" "}
+                <code className="font-mono text-xs">streamlit run app.py</code> from{" "}
+                <code className="font-mono text-xs">rula-gtm-agent</code>.
+              </>
+            ) : (
+              <> in your host (e.g. Vercel project env) and redeploy so production opens your deployed Streamlit app.</>
+            )}
           </div>
         )}
 
-        <p className="mt-12 max-w-3xl border-t border-slate-200 pt-8 text-xs leading-relaxed text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        <p className="mt-12 max-w-3xl border-t border-[var(--rula-border)] pt-8 text-xs leading-relaxed text-[var(--rula-text-tertiary)]">
           {site.footerNote}
         </p>
       </main>

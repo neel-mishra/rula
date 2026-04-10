@@ -1,0 +1,15 @@
+# Rula Revenue Intelligence — dark theme (Phase 2; brand-aligned, presentation only).
+# See src/ui/theme.py for token definitions shared with HTML components.
+
+[theme]
+base = "dark"
+primaryColor = "#6B4C9A"
+backgroundColor = "#121018"
+secondaryBackgroundColor = "#1C1826"
+textColor = "#E8E4EF"
+font = "sans serif"
+
+[theme.sidebar]
+primaryColor = "#6B4C9A"
+secondaryBackgroundColor = "#16121E"
+textColor = "#E8E4EF"
