@@ -40,8 +40,9 @@ streamlit run app.py
 ### Streamlit Community Cloud
 
 - **Main file:** `rula-gtm-agent/app.py` (from the monorepo root).
-- **Dependencies:** Keep **`requirements.txt` next to `app.py`** (`rula-gtm-agent/requirements.txt`). Cloud may still use **Poetry** when `pyproject.toml` is present; `[tool.poetry] package-mode = false` prevents Poetry from failing on “install the root project.”
-- **Layout:** `pyproject.toml` includes `[build-system]` + setuptools discovery so local **`pip install -e .`** keeps working.
+- **Dependencies:** **`requirements.txt` next to `app.py`** (`rula-gtm-agent/requirements.txt`). There is **no `pyproject.toml` in this folder** so Community Cloud uses **pip/uv**, not Poetry (Poetry was failing on “install the root project”).
+- **Local install:** **`setup.cfg` + `setup.py`** support **`pip install -e .[dev]`** the same as before.
+- **Troubleshooting:** If logs show **`Updating the app files has failed: exit status 1`**, Cloud cannot pull from GitHub—reconnect the repo in app settings, confirm branch access, or redeploy after fixing permissions. Stale log timestamps (e.g. old `20:46` block) may repeat until a successful pull runs.
 
 ## Configuration
 
