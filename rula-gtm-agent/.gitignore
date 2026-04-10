@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+out/
+lineage.jsonl
+telemetry_events.jsonl
+*.egg-info/
+dist/
+build/
+.venv/

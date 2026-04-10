@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rula-navy: #0f172a;
+  --rula-blue: #2563eb;
+  --rula-green: #10b981;
+  --rula-canvas: #f1f5f9;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --rula-canvas: #0f172a;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}

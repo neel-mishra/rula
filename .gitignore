@@ -1,0 +1,28 @@
+# Secrets and local env
+.env
+.env.local
+.env.*.local
+**/.env.local
+
+# Dependencies and builds
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+**/build/
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/venv/
+**/.pytest_cache/
+**/*.egg-info/
+
+# OS / IDE
+.DS_Store
+*.pem
+
+# Rula agent outputs (large / local)
+rula-gtm-agent/out/
+rula-gtm-agent/.ruff_cache/

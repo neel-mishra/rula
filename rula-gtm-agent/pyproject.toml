@@ -1,0 +1,33 @@
+[project]
+name = "rula-gtm-agent"
+version = "0.1.0"
+description = "Revenue intelligence multi-agent prototype for Rula case study"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.7.0",
+  "streamlit>=1.37.0",
+  "anthropic>=0.39.0",
+  "google-genai>=1.0.0",
+  "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.8.0",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Pyflakes + syntax errors; ignore unused-locals (common in staged parsers / demos).
+select = ["E9", "F"]
+ignore = ["F841"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -1,0 +1,87 @@
+"use client";
+
+type Accent = "blue" | "emerald";
+
+type Props = {
+  title: string;
+  description: string;
+  cta: string;
+  href: string;
+  accent?: Accent;
+  disabled?: boolean;
+  disabledReason?: string;
+};
+
+function ExternalIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
+
+export function ToolSelectorCard({
+  title,
+  description,
+  cta,
+  href,
+  accent = "blue",
+  disabled,
+  disabledReason,
+}: Props) {
+  const accentBar =
+    accent === "emerald"
+      ? "bg-emerald-500 group-hover:bg-emerald-400"
+      : "bg-[var(--rula-blue)] group-hover:bg-blue-600";
+
+  if (disabled) {
+    return (
+      <div
+        className="flex flex-col overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 opacity-90 dark:border-slate-600 dark:bg-slate-800/30"
+        aria-disabled="true"
+      >
+        <div className={`h-1 w-full shrink-0 ${accentBar} opacity-50`} />
+        <div className="flex flex-col p-8">
+          <h3 className="text-xl font-semibold text-[var(--rula-navy)] dark:text-slate-100">{title}</h3>
+          <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{description}</p>
+          <p className="mt-6 text-sm text-amber-800 dark:text-amber-200">{disabledReason}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border-2 border-slate-200 bg-white shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-[var(--rula-blue)] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--rula-blue)] focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500 dark:focus-visible:ring-offset-slate-900"
+    >
+      <div className={`h-1.5 w-full shrink-0 ${accentBar} transition-colors`} />
+      <div className="flex flex-1 flex-col p-8">
+        <h3 className="text-xl font-semibold tracking-tight text-[var(--rula-navy)] dark:text-slate-100">{title}</h3>
+        <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{description}</p>
+        <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+          Opens the Streamlit workspace in a new tab. Use the ⋮ menu there for theme, rerun, and cache.
+        </p>
+        <span className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--rula-blue)] px-5 py-3 text-center text-sm font-semibold text-white transition group-hover:bg-[#1d4ed8] dark:group-hover:bg-blue-600">
+          {cta}
+          <ExternalIcon className="opacity-90" />
+        </span>
+      </div>
+    </a>
+  );
+}

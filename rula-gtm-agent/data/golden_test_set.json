@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "map_verification",
+    "id": "A",
+    "expected_tier": "HIGH"
+  },
+  {
+    "kind": "map_verification",
+    "id": "B",
+    "expected_tier": "LOW"
+  },
+  {
+    "kind": "map_verification",
+    "id": "C",
+    "expected_tier": "MEDIUM"
+  },
+  {
+    "kind": "prospecting",
+    "account_id": 1,
+    "expect_judge_pass": true
+  },
+  {
+    "kind": "prospecting",
+    "account_id": 5,
+    "expect_judge_pass": true
+  },
+  {
+    "kind": "prospecting",
+    "account_id": 8,
+    "expect_judge_pass": true
+  }
+]

@@ -1,0 +1,7 @@
+# First matching rule wins
+precedence: first_match
+rules:
+  - id: block_below_icp
+    when:
+      flag_contains: "BELOW_ICP_THRESHOLD"
+    action: block_generation
