@@ -21,6 +21,7 @@ TASK_MODEL_MAP: dict[str, str] = {
     "rationale_summary": "claude",
     "value_prop_explanation": "gemini",
     "map_synthesis": "gemini",
+    "map_committer": "gemini",
     "threshold_justification": "gemini",
     "econ_scenario": "gemini",
 }

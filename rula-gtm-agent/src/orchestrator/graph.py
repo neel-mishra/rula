@@ -12,6 +12,8 @@ from src.agents.prospecting.enrichment import enrich_account
 from src.agents.prospecting.matcher import match_value_props
 from src.agents.prospecting.generator import generate_outreach
 from src.agents.prospecting.evaluator import evaluate_output
+from src.agents.verification.account_profile import build_company_profile_text
+from src.agents.verification.committer_resolver import resolve_committer
 from src.agents.verification.parser import parse_evidence
 from src.agents.verification.flagger import flag_actions
 from src.config import load_config
@@ -317,6 +319,9 @@ def run_map_verification(
     try:
         _write_lineage(trace_id, "map.input", {"evidence_id": eid, **ctx_meta_map})
         parsed = parse_evidence(eid, etext)
+        profile_txt = build_company_profile_text(account_id)
+        ce = resolve_committer(etext, profile_txt)
+        parsed = parsed.model_copy(update={"committer_name": ce.name, "committer_title": ce.title})
         emit_lifecycle(
             COMMITMENT_EVIDENCE_CAPTURED,
             pipeline="map_verification",

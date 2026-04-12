@@ -61,8 +61,14 @@ def run_map_verification_bulk(
     for item in evidence_items:
         eid = item.get("evidence_id", "?")
         text = item.get("text", "")
+        aid_raw = item.get("account_id")
+        account_id: int | None
         try:
-            output = run_map_verification(eid, text, actor_role=actor_role)
+            account_id = int(aid_raw) if aid_raw is not None else None
+        except (TypeError, ValueError):
+            account_id = None
+        try:
+            output = run_map_verification(eid, text, actor_role=actor_role, account_id=account_id)
             if output.judge_pass:
                 outcome = MapOutcome.PASS
             elif output.confidence_tier == "LOW":

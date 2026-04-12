@@ -52,11 +52,11 @@ def test_bulk_run_continue_on_error():
     assert len(summary.pass_rows) + len(summary.review_rows) == len(items)
 
 
-def _mock_with_error(eid, text, *, actor_role="system", enable_audit=True):
+def _mock_with_error(eid, text, *, actor_role="system", enable_audit=True, **kwargs):
     if eid == "FAIL":
         raise RuntimeError("Injected test failure")
     from src.orchestrator.graph import run_map_verification
-    return run_map_verification(eid, text, actor_role=actor_role)
+    return run_map_verification(eid, text, actor_role=actor_role, **kwargs)
 
 
 def test_bulk_summary_properties():
