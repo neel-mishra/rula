@@ -1,0 +1,16 @@
+{
+  "subject": "Re: Q2 board deck — need your sign-off by EOD",
+  "from": "Priya Shah <priya@boardroom.example.com>",
+  "to": "user@example.com",
+  "body_text": "Hi — pulling the trigger on the deck tomorrow morning. Could you review pages 4 and 9 and confirm the numbers before EOD today? Thanks.",
+  "body_html": "",
+  "received_at": "2026-04-23T17:42:00+00:00",
+  "headers": {
+    "Message-Id": "<thread-deck-7@boardroom.example.com>",
+    "In-Reply-To": "<thread-deck-6@boardroom.example.com>",
+    "References": "<thread-deck-1@boardroom.example.com> <thread-deck-6@boardroom.example.com>"
+  },
+  "expected_action": "inbox_keep",
+  "expected_outcome": "inbox_keep",
+  "label_source": "test_fixture"
+}

@@ -10,24 +10,35 @@ logger = logging.getLogger(__name__)
 _ENV_LOADED = False
 
 
+def _env_candidates() -> list[Path]:
+    """Return dotenv lookup order, preferring monorepo root."""
+    repo_root = Path(__file__).resolve().parents[2]
+    return [
+        repo_root / ".env",
+        Path.cwd() / ".env",
+        Path(__file__).resolve().parents[1] / ".env",
+    ]
+
+
 def _load_dotenv() -> None:
     global _ENV_LOADED
     if _ENV_LOADED:
         return
     _ENV_LOADED = True
-    env_path = Path(".env")
-    if not env_path.exists():
+    for env_path in _env_candidates():
+        if not env_path.exists():
+            continue
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key, value = key.strip(), value.strip()
+            if key and key not in os.environ:
+                os.environ[key] = value
         return
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        key, value = key.strip(), value.strip()
-        if key and key not in os.environ:
-            os.environ[key] = value
 
 
 @dataclass(frozen=True)

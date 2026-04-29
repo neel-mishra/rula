@@ -1,0 +1,48 @@
+# Render Blueprint — AI Inbox Chief of Staff (starter)
+# Repo: rula-gtm-agent (monorepo). Adjust names and link Postgres + Redis in Render dashboard.
+# Docs: docs/deployment-vercel-render.md
+
+version: "1"
+
+services:
+  - type: web
+    name: inbox-cos-api
+    runtime: python
+    rootDir: AI inbox chief of staff
+    buildCommand: >-
+      pip install poetry==1.8.2 &&
+      poetry config virtualenvs.create false &&
+      poetry install --no-root --without dev
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.6"
+      # Set all secrets in Render dashboard (see docs/deployment-inputs-checklist.md).
+
+  - type: worker
+    name: inbox-cos-ingest-worker
+    runtime: python
+    rootDir: AI inbox chief of staff
+    buildCommand: >-
+      pip install poetry==1.8.2 &&
+      poetry config virtualenvs.create false &&
+      poetry install --no-root --without dev
+    startCommand: python -m workers.ingest_worker
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.6"
+
+  - type: cron
+    name: inbox-cos-scheduler
+    runtime: python
+    rootDir: AI inbox chief of staff
+    schedule: "0 * * * *"
+    buildCommand: >-
+      pip install poetry==1.8.2 &&
+      poetry config virtualenvs.create false &&
+      poetry install --no-root --without dev
+    startCommand: python -m workers.scheduler
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.6"

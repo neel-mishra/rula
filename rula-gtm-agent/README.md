@@ -16,7 +16,7 @@ Evidence -> Parser -> Commitment Scorer -> Action Flagger -> Audit Judge -> Outp
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .[dev]
-cp .env.example .env   # Add API keys for generative features (optional)
+cp rula-gtm-agent/.env.example .env   # Add API keys in monorepo root
 ```
 
 Run tests:
@@ -46,7 +46,7 @@ streamlit run app.py
 
 ## Configuration
 
-Copy `.env.example` to `.env` and set your API keys:
+Copy `rula-gtm-agent/.env.example` to repo-root `.env` and set your API keys:
 
 | Variable | Purpose | Required |
 |----------|---------|----------|
@@ -111,7 +111,7 @@ The Streamlit app has 4 pages accessible via sidebar navigation:
 ```
 src/
   agents/          # Pipeline agents (enrichment, matcher, generator, evaluator, judge, correction, corrections)
-  config.py        # Centralized configuration from .env
+  config.py        # Centralized configuration from repo-root .env
   explainability/  # Value-prop rationale, threshold explanation, unit economics
   integrations/    # Ingestion (Test Data / Clay), CRM export, handoff orchestrator, review queue
   orchestrator/    # Single-account graph, bulk prospecting runner

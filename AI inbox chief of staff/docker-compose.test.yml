@@ -1,0 +1,40 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI Inbox Chief of Staff — Integration Test Stack
+# Usage:
+#   docker compose -f docker-compose.test.yml up -d
+#   DATABASE_URL="postgresql+asyncpg://inbox_user:inbox_pass@localhost:5433/inbox_test" \
+#     python3 -m pytest tests/ -v --tb=short
+#   docker compose -f docker-compose.test.yml down -v
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  postgres-test:
+    image: pgvector/pgvector:pg16
+    container_name: inbox_postgres_test
+    environment:
+      POSTGRES_DB: inbox_test
+      POSTGRES_USER: inbox_user
+      POSTGRES_PASSWORD: inbox_pass
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inbox_user -d inbox_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: inbox_redis_test
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10

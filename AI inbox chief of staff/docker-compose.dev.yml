@@ -1,0 +1,111 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI Inbox Chief of Staff — Local Development Stack
+# Usage: docker compose -f docker-compose.dev.yml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: inbox_postgres
+    environment:
+      POSTGRES_DB: inbox_dev
+      POSTGRES_USER: inbox_user
+      POSTGRES_PASSWORD: inbox_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inbox_user -d inbox_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: inbox_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Local SQS emulator (for dev queue testing)
+  localstack:
+    image: localstack/localstack:3
+    container_name: inbox_localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: sqs,s3
+      DEFAULT_REGION: us-east-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:4566/_localstack/health | grep '\"sqs\": \"available\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  # API service
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: inbox_api
+    env_file: .env.dev
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://inbox_user:inbox_pass@postgres:5432/inbox_dev"
+      REDIS_URL: "redis://redis:6379/0"
+      SQS_INGEST_QUEUE_URL: "http://localstack:4566/000000000000/inbox-ingest"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Worker service
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+    container_name: inbox_worker
+    env_file: .env.dev
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://inbox_user:inbox_pass@postgres:5432/inbox_dev"
+      REDIS_URL: "redis://redis:6379/0"
+      SQS_INGEST_QUEUE_URL: "http://localstack:4566/000000000000/inbox-ingest"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
+  # OpenTelemetry collector (local traces)
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.100.0
+    container_name: inbox_otel
+    volumes:
+      - ./infra/otel-collector.yml:/etc/otel/config.yml
+    command: ["--config=/etc/otel/config.yml"]
+    ports:
+      - "4317:4317"   # gRPC
+      - "4318:4318"   # HTTP
+
+volumes:
+  postgres_data:
+  localstack_data:

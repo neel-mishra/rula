@@ -1,0 +1,11 @@
+{
+  "subject": "Quick question about the spec",
+  "from": "Client <client@partner.example.com>",
+  "to": "user@example.com",
+  "body_text": "Could you review the attached spec by Friday and let me know what you think?",
+  "body_html": "",
+  "received_at": "2026-04-17T10:15:00+00:00",
+  "headers": {
+    "Message-Id": "<a1@partner.example.com>"
+  }
+}

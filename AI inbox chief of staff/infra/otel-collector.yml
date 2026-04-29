@@ -1,0 +1,49 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 256
+
+  # Provide a default service.name only when the SDK didn't set one.
+  # `insert` (not `upsert`) preserves per-process names like
+  # `inbox-cos-api` / `inbox-cos-worker-ingest` set in core/observability/tracing.py.
+  attributes:
+    actions:
+      - key: service.name
+        value: inbox-chief-of-staff
+        action: insert
+
+exporters:
+  # Local dev: log to stdout
+  logging:
+    loglevel: info
+    sampling_initial: 10
+    sampling_thereafter: 100
+
+  # Prod: replace with OTLP exporter to Datadog/Honeycomb/AWS X-Ray
+  # otlphttp:
+  #   endpoint: https://api.honeycomb.io
+  #   headers:
+  #     x-honeycomb-team: ${HONEYCOMB_API_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, attributes]
+      exporters: [logging]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
