@@ -1,9 +1,0 @@
-{
-  "subject": "Your receipt for order #1234",
-  "from": "Stripe <noreply@stripe.example.com>",
-  "to": "user@example.com",
-  "body_text": "Thanks for your purchase. Total: $42.00.",
-  "body_html": "",
-  "received_at": "2026-04-18T08:00:00+00:00",
-  "headers": {}
-}

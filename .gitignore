@@ -27,3 +27,4 @@
 # Rula agent outputs (large / local)
 rula-gtm-agent/out/
 rula-gtm-agent/.ruff_cache/
+.vercel
