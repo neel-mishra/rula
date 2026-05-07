@@ -2,16 +2,16 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import { relativeTime, confidenceLabel, cn } from "@/lib/utils";
+import { relativeTime, cn } from "@/lib/utils";
 import { useUIStore } from "@/store/ui-store";
+import { useToast } from "@/components/ui/toast";
+import { Avatar } from "@/components/ui/avatar";
+import { PriorityBadge } from "@/components/ui/priority-badge";
+import { ConfidenceMeter } from "@/components/ui/confidence-meter";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import type { Message, Priority } from "@/types";
 
-const PRIORITY_COLORS: Record<Priority, string> = {
-  urgent: "bg-red-100 text-red-800",
-  normal: "bg-blue-100 text-blue-800",
-  brief: "bg-gray-100 text-gray-700",
-  archive: "bg-gray-50 text-gray-500",
-};
+const PRIORITIES: Priority[] = ["urgent", "normal", "brief", "archive"];
 
 interface Props {
   message: Message;
@@ -19,93 +19,80 @@ interface Props {
 
 export function MessageCard({ message }: Props) {
   const qc = useQueryClient();
-  const { selectedMessageId, setSelectedMessage } = useUIStore();
+  const { toast } = useToast();
+  const { selectedMessageId, setSelectedMessage, openCorrectionModal } = useUIStore();
   const isSelected = selectedMessageId === message.id;
+  const triage = message.triage;
+  const senderName = message.senderName || message.senderEmail;
 
   const override = useMutation({
     mutationFn: async (priority: Priority) => {
       await api.messages.overrideTriage(message.id, priority);
-      // Also record as triage feedback for Gate 1 composite metric
       await api.feedback.triage(message.id, priority);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["messages"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["messages"] });
+      toast({ type: "success", title: "Override saved" });
+    },
+    onError: () => toast({ type: "error", title: "Failed to save override" }),
   });
-
-  const triage = message.triage;
 
   return (
     <div
       onClick={() => setSelectedMessage(isSelected ? null : message.id)}
       className={cn(
-        "border-b px-4 py-3 cursor-pointer transition-colors",
-        isSelected ? "bg-blue-50" : "hover:bg-gray-50",
+        "flex items-start gap-3 px-4 py-3.5 border-b border-line cursor-pointer transition-colors",
+        isSelected
+          ? "bg-brand-soft border-l-2 border-l-brand"
+          : "bg-surface hover:bg-lavender",
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm truncate">
-              {message.senderName || message.senderEmail}
-            </span>
-            <span className="text-xs text-gray-400 shrink-0">
-              {relativeTime(message.receivedAt)}
-            </span>
-          </div>
-          <div className="text-sm font-medium text-gray-900 truncate">
-            {message.subject}
-          </div>
-          <div className="text-xs text-gray-500 truncate mt-0.5">
-            {message.bodyPreview}
-          </div>
-        </div>
+      <Avatar name={senderName} size="md" className="mt-0.5 shrink-0" />
 
-        {triage && (
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span
-              className={cn(
-                "text-xs px-2 py-0.5 rounded-full font-medium",
-                PRIORITY_COLORS[triage.priority],
-              )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-[14px] font-semibold text-navy truncate">{senderName}</span>
+          <span className="text-[11px] text-ink-3 shrink-0 ml-auto">
+            {relativeTime(message.receivedAt)}
+          </span>
+        </div>
+        <p className="text-[14px] font-medium text-navy truncate">{message.subject}</p>
+        <p className="text-xs text-ink-3 truncate mt-0.5">{message.bodyPreview}</p>
+
+        {triage?.rationale && (
+          <div className="mt-2 rounded-lg bg-surface-muted px-3 py-2">
+            <Eyebrow className="inline mr-1.5">Why</Eyebrow>
+            <span className="text-xs text-ink-2">{triage.rationale}</span>
+          </div>
+        )}
+
+        {isSelected && triage && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-ink-3">Move to:</span>
+            {PRIORITIES.filter((p) => p !== triage.priority).map((p) => (
+              <button
+                key={p}
+                onClick={(e) => { e.stopPropagation(); override.mutate(p); }}
+                disabled={override.isPending}
+                className="disabled:opacity-50"
+              >
+                <PriorityBadge priority={p} size="sm" />
+              </button>
+            ))}
+            <button
+              onClick={(e) => { e.stopPropagation(); openCorrectionModal(message.id); }}
+              className="text-xs text-brand hover:underline ml-auto"
             >
-              {triage.priority}
-            </span>
-            <span className="text-xs text-gray-400">
-              {confidenceLabel(triage.confidence)}
-            </span>
+              Wrong priority?
+            </button>
           </div>
         )}
       </div>
 
-      {triage?.rationale && (
-        <div className="mt-2 text-xs text-gray-500 bg-gray-50 rounded p-2">
-          <span className="font-medium">Why: </span>
-          {triage.rationale}
-        </div>
-      )}
-
-      {/* Triage override controls — only visible when card is selected */}
-      {isSelected && triage && (
-        <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-gray-500 mr-1">Move to:</span>
-          {(["urgent", "normal", "brief", "archive"] as Priority[])
-            .filter((p) => p !== triage.priority)
-            .map((p) => (
-              <button
-                key={p}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  override.mutate(p);
-                }}
-                disabled={override.isPending}
-                className={cn(
-                  "text-xs px-2 py-0.5 rounded-full border font-medium transition-colors",
-                  PRIORITY_COLORS[p],
-                  "hover:opacity-80 disabled:opacity-50",
-                )}
-              >
-                {p}
-              </button>
-            ))}
+      {triage && (
+        <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+          <PriorityBadge priority={triage.priority} size="sm" />
+          <ConfidenceMeter value={triage.confidence} className="w-20" />
         </div>
       )}
     </div>

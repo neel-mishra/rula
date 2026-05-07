@@ -24,7 +24,15 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     node_env: Literal["development", "staging", "production"] = "development"
     app_base_url: str = "http://localhost:3000"
+    extra_cors_origins: str = ""  # comma-separated additional allowed origins
     api_base_url: str = "http://localhost:8000"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        origins = [self.app_base_url]
+        if self.extra_cors_origins:
+            origins += [o.strip() for o in self.extra_cors_origins.split(",") if o.strip()]
+        return origins
     webhook_base_url: str = "https://your-ngrok-or-domain.ngrok.io"
 
     # -------------------------------------------------------------------------
@@ -73,8 +81,15 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     # Queue
     # -------------------------------------------------------------------------
-    queue_provider: Literal["cloud_tasks"] = "cloud_tasks"
+    queue_provider: Literal["inline", "cloud_tasks"] = "inline"
     queue_url: str = ""
+    # Shared secret checked by the /worker endpoint to reject unauthenticated calls.
+    # Set to a strong random value in staging/production.
+    worker_auth_secret: str = "change-me-worker-secret"
+    # GCP project and queue name used when queue_provider=cloud_tasks.
+    cloud_tasks_project: str = ""
+    cloud_tasks_location: str = "us-central1"
+    cloud_tasks_queue: str = "agent-dispatch"
 
     # -------------------------------------------------------------------------
     # Gmail Pub/Sub push (required for webhook ingestion)

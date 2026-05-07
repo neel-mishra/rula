@@ -1,14 +1,82 @@
 from __future__ import annotations
+import json
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.core.config import settings
 from app.policy.action_policy import ActionPolicy, AgentAction
 from app.telemetry.events import TelemetryEmitter
 
 logger = structlog.get_logger()
 _policy = ActionPolicy()
 _telemetry = TelemetryEmitter()
+
+
+async def _enqueue_cloud_task(
+    workflow_run_id: str,
+    agent_type: str,
+    message_id: str,
+) -> None:
+    """Push a Cloud Tasks HTTP task to POST /worker/run-agent."""
+    from google.cloud import tasks_v2
+    from google.protobuf import duration_pb2
+
+    client = tasks_v2.CloudTasksAsyncClient()
+    parent = client.queue_path(
+        settings.cloud_tasks_project,
+        settings.cloud_tasks_location,
+        settings.cloud_tasks_queue,
+    )
+
+    task_name = f"{parent}/tasks/workflow-{workflow_run_id}-{agent_type}"
+    payload = json.dumps({
+        "workflow_run_id": workflow_run_id,
+        "agent_type": agent_type,
+        "message_id": message_id,
+    }).encode("utf-8")
+
+    task = tasks_v2.Task(
+        name=task_name,
+        dispatch_deadline=duration_pb2.Duration(seconds=600),
+        http_request=tasks_v2.HttpRequest(
+            http_method=tasks_v2.HttpMethod.POST,
+            url=f"{settings.queue_url}/worker/run-agent",
+            headers={
+                "Content-Type": "application/json",
+                "X-Worker-Auth": settings.worker_auth_secret,
+            },
+            body=payload,
+        ),
+    )
+
+    await client.create_task(request={"parent": parent, "task": task})
+    logger.info(
+        "cloud_task_enqueued",
+        workflow_run_id=workflow_run_id,
+        agent_type=agent_type,
+    )
+
+
+async def maybe_enqueue(
+    workflow_run_id: str,
+    agent_type: str,
+    message_id: str,
+    db: AsyncSession,
+    fsm,
+) -> None:
+    """Dispatch agent inline or via Cloud Tasks depending on QUEUE_PROVIDER."""
+    if settings.queue_provider == "cloud_tasks":
+        await _enqueue_cloud_task(workflow_run_id, agent_type, message_id)
+    else:
+        if agent_type == "triage":
+            await dispatch_triage(workflow_run_id=workflow_run_id, db=db, fsm=fsm)
+        elif agent_type == "draft":
+            await dispatch_draft(workflow_run_id=workflow_run_id, db=db, fsm=fsm)
+        elif agent_type == "brief":
+            await dispatch_brief(workflow_run_id=workflow_run_id, db=db, fsm=fsm)
+        else:
+            logger.error("Unknown agent_type in maybe_enqueue", agent_type=agent_type)
 
 
 async def dispatch_triage(
@@ -34,10 +102,8 @@ async def dispatch_triage(
         logger.error("WorkflowRun not found", workflow_run_id=workflow_run_id)
         return
 
-    # Check policy before proceeding
     _policy.enforce(AgentAction.READ_MESSAGE, "TriageAgent", workflow_run_id)
 
-    # Get message
     from app.models.message import Message
     msg_result = await db.execute(select(Message).where(Message.id == run.message_id))
     message = msg_result.scalar_one_or_none()
@@ -45,13 +111,11 @@ async def dispatch_triage(
         logger.error("Message not found for workflow", workflow_run_id=workflow_run_id)
         return
 
-    # Get user credentials
     user_result = await db.execute(select(User).where(User.id == run.user_id))
     user = user_result.scalar_one_or_none()
     if not user:
         return
 
-    # Build NormalizedMessage from DB record (avoids re-fetching from Gmail)
     from datetime import timezone
     normalized = NormalizedMessage(
         message_id=message.gmail_message_id,
@@ -65,11 +129,9 @@ async def dispatch_triage(
         label_ids=[],
     )
 
-    # Run triage
     agent = TriageAgent(telemetry=_telemetry)
     output = await agent.triage(normalized, workflow_run_id=workflow_run_id, user_id=str(run.user_id))
 
-    # Persist result
     await triage_repo.create(
         workflow_run_id=workflow_run_id,
         priority=output.priority,
@@ -79,11 +141,9 @@ async def dispatch_triage(
         model_version=agent.model,
     )
 
-    # Advance state
     await fsm.transition(WorkflowState.TRIAGED, db)
     logger.info("Triage complete", workflow_run_id=workflow_run_id, priority=output.priority)
 
-    # Immediately dispatch to next stage
     await fsm.dispatch_agents(db)
 
 
@@ -110,7 +170,6 @@ async def dispatch_draft(
     if not run:
         return
 
-    # Enforce policy before any action
     _policy.enforce(AgentAction.WRITE_DRAFT, "DraftAgent", workflow_run_id)
 
     msg_result = await db.execute(select(Message).where(Message.id == run.message_id))
@@ -143,7 +202,6 @@ async def dispatch_draft(
         user_id=str(run.user_id),
     )
 
-    # Create Gmail draft
     refresh_token = decrypt_token(user.google_refresh_token)
     gmail = GmailClient(refresh_token)
     gmail_draft_id = gmail.create_draft(
@@ -152,7 +210,6 @@ async def dispatch_draft(
         body=output.draft_body,
     )
 
-    # Persist draft record
     await draft_repo.create(
         workflow_run_id=workflow_run_id,
         body=output.draft_body,
@@ -172,8 +229,6 @@ async def dispatch_brief(
 ) -> None:
     """Queue message for brief aggregation, advance state to BRIEF_QUEUED."""
     from app.orchestrator.state_machine import WorkflowState
-    # In Prototype, brief generation is batch-triggered on schedule, not per-message.
-    # Mark this message as brief_queued so the brief scheduler picks it up.
     await fsm.transition(WorkflowState.BRIEF_QUEUED, db)
     logger.info("Message queued for brief", workflow_run_id=workflow_run_id)
 
@@ -193,13 +248,11 @@ async def run_brief_batch(user_id: str, time_window: str, db: AsyncSession) -> N
     workflow_repo = WorkflowRepository(db)
     brief_repo = BriefRepository(db)
 
-    # Get all brief-queued runs for this user
     pending_runs = await workflow_repo.list_pending_for_user(user_id)
     brief_runs = [r for r in pending_runs if r.state == "brief_queued"]
     if not brief_runs:
         return
 
-    # Fetch messages
     messages = []
     for run in brief_runs:
         msg_result = await db.execute(select(Message).where(Message.id == run.message_id))
@@ -217,10 +270,8 @@ async def run_brief_batch(user_id: str, time_window: str, db: AsyncSession) -> N
                 label_ids=[],
             ))
 
-    # Generate brief
     brief_telemetry = TelemetryEmitter()
     agent = BriefAgent(telemetry=brief_telemetry)
-    # Use first run_id as representative for telemetry
     output = await agent.generate_brief(
         messages=messages,
         time_window=time_window,
@@ -236,7 +287,6 @@ async def run_brief_batch(user_id: str, time_window: str, db: AsyncSession) -> N
         message_ids=[str(r.message_id) for r in brief_runs],
     )
 
-    # Advance all brief-queued runs to completed
     for run in brief_runs:
         fsm = WorkflowStateMachine(str(run.id), WorkflowState.BRIEF_QUEUED)
         await fsm.transition(WorkflowState.COMPLETED, db)

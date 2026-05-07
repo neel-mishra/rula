@@ -36,6 +36,8 @@ export interface Message {
   senderName: string;
   receivedAt: string;
   bodyPreview: string;
+  body?: string;
+  hasDraft?: boolean;
   triage: TriageResult | null;
   workflowState: WorkflowState;
 }
@@ -56,6 +58,18 @@ export interface Draft {
 export interface ActionItem {
   text: string;
   messageId?: string;
+  from?: string;
+  due?: string;
+  done?: boolean;
+}
+
+export interface BriefThread {
+  id: string;
+  sender: string;
+  subject: string;
+  snippet: string;
+  timestamp: string;
+  read: boolean;
 }
 
 export interface Brief {
@@ -65,6 +79,9 @@ export interface Brief {
   actionItems: ActionItem[];
   messageIds: string[];
   createdAt: string;
+  threadCount?: number;
+  generatedAt?: string;
+  modelVersion?: string;
 }
 
 export interface PaginatedResponse<T> {

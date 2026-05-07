@@ -1,10 +1,15 @@
 from __future__ import annotations
 import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
+
+import structlog
 
 from app.agents.base_agent import BaseAgent
 from app.ingestion.normalizer import NormalizedMessage
 from app.telemetry.events import TelemetryEmitter
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclass
@@ -56,14 +61,38 @@ class DraftAgent(BaseAgent):
         )
         try:
             parsed = json.loads(raw)
-            return DraftAgentOutput(
+            output = DraftAgentOutput(
                 draft_body=parsed["draft_body"],
                 subject_line=parsed["subject_line"],
                 confidence=float(parsed["confidence"]),
             )
         except (json.JSONDecodeError, KeyError):
-            return DraftAgentOutput(
+            output = DraftAgentOutput(
                 draft_body=raw,
                 subject_line=f"Re: {message.subject}",
                 confidence=0.50,
             )
+
+        await self._save_draft_artifact(output, message.message_id, user_id)
+        return output
+
+    async def _save_draft_artifact(
+        self,
+        output: DraftAgentOutput,
+        message_id: str,
+        user_id: str,
+    ) -> None:
+        from app.storage.gcs_client import get_storage_client
+        try:
+            ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            blob_name = f"drafts/{user_id}/{message_id}/{ts}.json"
+            payload = json.dumps({
+                "draft_body": output.draft_body,
+                "subject_line": output.subject_line,
+                "confidence": output.confidence,
+            }).encode("utf-8")
+            storage = get_storage_client()
+            uri = await storage.upload_artifact(blob_name, payload, content_type="application/json")
+            logger.info("draft_artifact_saved", message_id=message_id, uri=uri)
+        except Exception as exc:
+            logger.warning("draft_artifact_save_failed", message_id=message_id, error=str(exc))

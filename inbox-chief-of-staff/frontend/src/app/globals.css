@@ -2,11 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
+/* ── Design tokens ─────────────────────────────────────── */
+:root {
+  --brand: #6B4C9A;
+  --brand-hover: #554378;
+  --brand-soft: rgba(107,76,154,0.12);
+  --accent: #9575C4;
+  --accent-soft: rgba(149,117,196,0.15);
+  --canvas: #FAF9FC;
+  --surface: #FFFFFF;
+  --surface-muted: #F5F2FA;
+  --lavender: #EDE8F5;
+  --line: #E5DFF0;
+  --line-strong: #D4CCE8;
+  --navy: #1E1B2E;
+  --ink-2: #5C5668;
+  --ink-3: #7A7389;
+  --ok: #059669;
+  --ok-soft: rgba(5,150,105,0.12);
+  --warn: #D97706;
+  --warn-soft: rgba(217,119,6,0.12);
+  --err: #DC2626;
+  --err-soft: rgba(220,38,38,0.10);
+  --urgent-bg: #FEE2E2; --urgent-fg: #991B1B;
+  --normal-bg: #DBEAFE; --normal-fg: #1E40AF;
+  --brief-bg:  #FEF3C7; --brief-fg:  #92400E;
+  --archive-bg: #F3F4F6; --archive-fg: #6B7280;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(107,76,154,0.10);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.07);
+  --shadow-brand: 0 4px 12px rgba(107,76,154,0.30);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0F0E17;
+    --surface: #181724;
+    --surface-muted: #221F33;
+    --lavender: #2A2540;
+    --line: #2C2940;
+    --line-strong: #3E3958;
+    --navy: #F1EEFA;
+    --ink-2: #BDB6CC;
+    --ink-3: #908AA0;
+    --brand: #9575C4;
+    --brand-hover: #B19BD8;
+    --brand-soft: rgba(149,117,196,0.20);
+    --accent: #B19BD8;
+    --accent-soft: rgba(149,117,196,0.22);
+    --urgent-bg: rgba(220,38,38,0.18);  --urgent-fg: #FCA5A5;
+    --normal-bg: rgba(59,130,246,0.18); --normal-fg: #93C5FD;
+    --brief-bg:  rgba(217,119,6,0.18);  --brief-fg:  #FCD34D;
+    --archive-bg: rgba(122,115,137,0.18); --archive-fg: #BDB6CC;
+  }
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
 body {
-  @apply bg-gray-50 text-gray-900;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--canvas);
+  color: var(--navy);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Focus ring ─────────────────────────────────────────── */
+button:focus-visible,
+a:focus-visible,
+[role="tab"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ── Scrollbar polish ───────────────────────────────────── */
+.scroll-pretty::-webkit-scrollbar { width: 10px; height: 10px; }
+.scroll-pretty::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scroll-pretty::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-3);
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }

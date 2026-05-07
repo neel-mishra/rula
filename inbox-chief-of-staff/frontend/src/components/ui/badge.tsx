@@ -6,14 +6,14 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gray-900 text-white",
-        secondary: "bg-gray-100 text-gray-900",
-        destructive: "bg-red-100 text-red-800",
-        outline: "border border-gray-200 text-gray-700",
-        urgent: "bg-red-100 text-red-800",
-        normal: "bg-blue-100 text-blue-800",
-        brief: "bg-gray-100 text-gray-700",
-        archive: "bg-gray-50 text-gray-500",
+        default:     "bg-navy text-surface",
+        secondary:   "bg-surface-muted text-navy",
+        destructive: "bg-err-soft text-err",
+        outline:     "border border-line text-ink-2",
+        urgent:      "bg-urgent-bg text-urgent-fg",
+        normal:      "bg-normal-bg text-normal-fg",
+        brief:       "bg-brief-bg text-brief-fg",
+        archive:     "bg-archive-bg text-archive-fg",
       },
     },
     defaultVariants: { variant: "default" },

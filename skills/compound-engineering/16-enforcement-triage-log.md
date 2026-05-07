@@ -53,3 +53,4 @@ Use this file during weekly compounding to review:
 | 2026-04-29T19:08:33Z | warn | enforcement-warning | unknown | ambiguous domain detection | edit the roadmap to make it comprehensive and detailed with every single excecution workflow that will run to build this |  |  |
 | 2026-04-29T19:13:49Z | warn | enforcement-warning | unknown | ambiguous domain detection | What else are we missing from the plan to make this inbox Chief of Staff as robust and functional by providing comprehen |  |  |
 | 2026-04-29T19:25:31Z | warn | enforcement-warning | unknown | ambiguous domain detection | save @/Users/neelmishra/.cursor/plans/inbox_chief_of_staff_build_plan_6b5b2984.plan.md in the repository, labeled as "in |  |  |
+| 2026-05-06T16:43:08Z | warn | enforcement-warning | unknown | ambiguous domain detection | give me the screen by screen build order |  |  |

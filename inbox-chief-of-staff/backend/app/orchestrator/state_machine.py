@@ -68,21 +68,42 @@ class WorkflowStateMachine:
 
     async def dispatch_agents(self, db: AsyncSession) -> None:
         """Route to correct agent based on current state."""
-        from app.orchestrator.agent_dispatcher import dispatch_triage, dispatch_draft, dispatch_brief
+        from app.orchestrator.agent_dispatcher import maybe_enqueue
+        from app.repositories.workflow_repo import WorkflowRepository
+
+        repo = WorkflowRepository(db)
+        run = await repo.get_by_id(self.workflow_run_id)
+        message_id = str(run.message_id) if run else ""
 
         if self.current_state == WorkflowState.NORMALIZED:
-            await dispatch_triage(workflow_run_id=self.workflow_run_id, db=db, fsm=self)
+            await maybe_enqueue(
+                workflow_run_id=self.workflow_run_id,
+                agent_type="triage",
+                message_id=message_id,
+                db=db,
+                fsm=self,
+            )
 
         elif self.current_state == WorkflowState.TRIAGED:
-            # Determine routing from triage result
             from app.repositories.workflow_repo import TriageRepository
             triage_repo = TriageRepository(db)
             triage = await triage_repo.get_by_workflow_run(self.workflow_run_id)
             if triage and triage.priority in ("urgent", "normal"):
-                # Transition to DRAFT_QUEUED before handing off to DraftAgent
                 await self.transition(WorkflowState.DRAFT_QUEUED, db)
-                await dispatch_draft(workflow_run_id=self.workflow_run_id, db=db, fsm=self)
+                await maybe_enqueue(
+                    workflow_run_id=self.workflow_run_id,
+                    agent_type="draft",
+                    message_id=message_id,
+                    db=db,
+                    fsm=self,
+                )
             else:
-                await dispatch_brief(workflow_run_id=self.workflow_run_id, db=db, fsm=self)
+                await maybe_enqueue(
+                    workflow_run_id=self.workflow_run_id,
+                    agent_type="brief",
+                    message_id=message_id,
+                    db=db,
+                    fsm=self,
+                )
         else:
             logger.warning("dispatch_agents called in unexpected state", state=self.current_state)

@@ -4,17 +4,19 @@ import type { Priority } from "@/types";
 interface UIState {
   selectedMessageId: string | null;
   activeInboxFilter: Priority | "all";
-  isBriefPanelOpen: boolean;
+  correctionModalMessageId: string | null;
   setSelectedMessage: (id: string | null) => void;
   setInboxFilter: (filter: Priority | "all") => void;
-  setBriefPanelOpen: (open: boolean) => void;
+  openCorrectionModal: (id: string) => void;
+  closeCorrectionModal: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
   selectedMessageId: null,
-  activeInboxFilter: "all",
-  isBriefPanelOpen: false,
+  activeInboxFilter: "urgent",
+  correctionModalMessageId: null,
   setSelectedMessage: (id) => set({ selectedMessageId: id }),
   setInboxFilter: (filter) => set({ activeInboxFilter: filter }),
-  setBriefPanelOpen: (open) => set({ isBriefPanelOpen: open }),
+  openCorrectionModal: (id) => set({ correctionModalMessageId: id }),
+  closeCorrectionModal: () => set({ correctionModalMessageId: null }),
 }));
